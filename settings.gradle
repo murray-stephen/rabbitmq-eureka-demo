@@ -1,0 +1,4 @@
+rootProject.name = 'rabbitmq-eureka-demo'
+include 'eureka-microservice'
+include 'user-management'
+include 'user-events'
