@@ -9,9 +9,9 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/events")
-public class UserEvents {
+public class UserEventsController {
 
-    public UserEvents() {}
+    public UserEventsController() {}
 
     @GetMapping
     public ResponseEntity<String> testEventsEndpoint() {
