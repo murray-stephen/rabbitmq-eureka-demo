@@ -1,0 +1,108 @@
+version: '3.8'
+
+services:
+  eureka-service:
+    build:
+      context: ./eureka-microservice
+      dockerfile: Dockerfile
+    container_name: eureka-service
+    ports:
+      - "8761:8761"
+    networks:
+      - microservices-network
+
+  user-management:
+    build:
+      context: ./user-management
+      dockerfile: Dockerfile
+    container_name: user-management
+    ports:
+      - "8081:8081"
+    environment:
+      - EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE=http://eureka-service:8761/eureka
+    depends_on:
+      - eureka-service
+      - rabbitmq
+    networks:
+      - microservices-network
+
+  user-events:
+    build:
+      context: ./user-events
+      dockerfile: Dockerfile
+    container_name: user-events
+    ports:
+      - "8090:8090"
+    environment:
+      - EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE=http://eureka-service:8761/eureka
+    depends_on:
+      - eureka-service
+      - rabbitmq
+    networks:
+      - microservices-network
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: rabbitmq
+    hostname: rabbit-demo
+    ports:
+      - "8080:15672"
+      - "5672:5672"
+    networks:
+      - microservices-network
+
+networks:
+  microservices-network:
+    driver: bridge
+
+
+
+#version: '3.8'
+#
+#services:
+#  eureka-server:
+#    build: ./eureka-microservice
+#    container_name: eureka-server
+#    ports:
+#      - "8761:8761"
+#    healthcheck:
+#      test: ["CMD", "curl", "-f", "http://localhost:8761"]
+#      interval: 30s
+#      timeout: 10s
+#      retries: 5
+#
+#  rabbitmq:
+#    image: rabbitmq:3-management
+#    hostname: my-rabbit
+#    container_name: some-rabbit
+#    ports:
+#      - "15672:15672" # Management UI
+#      - "5672:5672"   # RabbitMQ server
+#    depends_on:
+#      eureka-server:
+#        condition: service_healthy
+#    healthcheck:
+#      test: ["CMD", "rabbitmqctl", "status"]
+#      interval: 30s
+#      timeout: 10s
+#      retries: 5
+#
+#  user-management-app:
+#    build: ./user-management
+#    depends_on:
+#      eureka-server:
+#        condition: service_healthy
+#      rabbitmq:
+#        condition: service_healthy
+#    ports:
+#      - "8081:8080"
+#
+#  user-events-app:
+#    build: ./user-events
+#    depends_on:
+#      eureka-server:
+#        condition: service_healthy
+#      rabbitmq:
+#        condition: service_healthy
+#    ports:
+#      - "8082:8080"
